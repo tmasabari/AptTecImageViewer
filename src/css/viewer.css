@@ -25,12 +25,7 @@ Zoomer * {
   outline: 0;
   overflow: hidden;
 }
-/* 
-.zoom_outer {
-  border: solid grey;
-  height: calc(100vh - 120px);
-  overflow-y: scroll;
-}*/
+
 #viewerZoom {
             position: relative;
             display: inline-block;
@@ -42,11 +37,6 @@ Zoomer * {
   /* transform-origin: 0px 0px; */
   transform: scale(1) translate(0px, 0px);
   cursor: grab;
-
-/* center align items in a div */
-    display: flex;
-    align-items: center;
-    justify-content: center;
 } 
 div#viewerZoom > img {
   border: solid greenyellow;
@@ -54,24 +44,6 @@ div#viewerZoom > img {
             /* transform-origin: top left; */
 
 }
-
-/* 
-#tiffImage{
-    position: absolute;
-    top: 100px;
-    left: 100px;
-    width: auto;
-    height: calc(100vh - 100px);
-    overflow-x: scroll;
-    border: 1px solid black;
-    margin-left: -1px;
-    margin-top: -1px;
-}
-to make width to full size and height to scroll
-
-    width: calc(100% - 100px);
-    height: auto;
-*/
 
 .imageToolbar, .navigationToolbar {
   display: inline-block;
@@ -91,4 +63,31 @@ to make width to full size and height to scroll
   background-color: #f1ecec;
     padding-top: 3px;
     padding-bottom: 3px;
+}
+
+.rotate90 {
+    -webkit-transform: translateY(-100%) rotate(90deg); /* Safari */
+    -moz-transform: translateY(-100%) rotate(90deg); /* Firefox 3.6 Firefox 4 */
+    /*-moz-transform-origin: right top; */
+    -ms-transform: translateY(-100%) rotate(90deg); /* IE9 */
+    -o-transform: translateY(-100%) rotate(90deg); /* Opera */
+    transform: translateY(-100%) rotate(90deg); /* W3C */  
+    -webkit-transform-origin: left bottom;
+    -moz-transform-origin: left bottom;
+    -ms-transform-origin: left bottom;
+    -o-transform-origin: left bottom;
+    transform-origin: left bottom;
+}
+
+.rotate270 {
+    -webkit-transform: translateX(-100%) rotate(-90deg); /* Safari */
+    -moz-transform: translateX(-100%) rotate(-90deg); /* Firefox 3.6 Firefox 4 */
+    -ms-transform: translateX(-100%) rotate(-90deg); /* IE9 */
+    -o-transform: translateX(-100%) rotate(-90deg); /* Opera */
+    transform: translateX(-100%) rotate(-90deg); /* W3C */  
+    -webkit-transform-origin: top right;
+    -moz-transform-origin: top right;
+    -ms-transform-origin: top right;
+    -o-transform-origin: top right;
+    transform-origin: top right;
 }

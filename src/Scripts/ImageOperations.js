@@ -6,6 +6,7 @@ export class ImageOperations {
     #currentFit = 0;
     constructor(imageContainerId, toolbarSelector) {
         this.imageContainerId = imageContainerId;
+        this.imageContainer = document.querySelector('#' + imageContainerId);
 
         //reset toolbar
         this.toolbar = document.querySelector(toolbarSelector);
@@ -15,9 +16,9 @@ export class ImageOperations {
         this.zoomer = new Zoomer();
 
         //rotate buttons
-        this.addButton('btn-secondary rotateLeft', 'fa-solid fa-rotate-left', '', () => this.zoomer.rotate(270) );
-        this.addButton('btn-secondary rotate180', 'fa-solid fa-arrows-rotate', '', () => this.zoomer.rotate(180) );
-        this.addButton('btn-secondary rotateRight', 'fa-solid fa-rotate-right', '', () => this.zoomer.rotate(90) );
+        this.addButton('btn-secondary rotateLeft', 'fa-solid fa-rotate-left', '', () => this.rotateFix(270) );
+        this.addButton('btn-secondary rotate180', 'fa-solid fa-arrows-rotate', '', () => this.rotateFix(180) );
+        this.addButton('btn-secondary rotateRight', 'fa-solid fa-rotate-right', '', () => this.rotateFix(90) );
 
         //zoom buttons
         this.addButton('btn-secondary', 'fa-solid fa-maximize', '', 
@@ -74,6 +75,10 @@ export class ImageOperations {
         const button = this.createButton(buttonClass, iconClass, label, onClick);
         this.toolbar.appendChild(button);
     }
+    rotateFix(degree) {
+        //this.topLeftImage();
+        this.zoomer.rotate(degree, this.#currentFit);
+    }
 
     fitBest(){
         this.#currentFit = 0;
@@ -81,6 +86,7 @@ export class ImageOperations {
         this.#image.style.height = 'auto';
         this.#image.style.maxWidth = '100%';
         this.#image.style.maxHeight = '100%';
+        this.centerTheImage();
     }
     
     fitWidth() {
@@ -89,6 +95,7 @@ export class ImageOperations {
         this.#image.style.height = 'auto';
         this.#image.style.maxWidth = 'none';
         this.#image.style.maxHeight = 'none';
+        this.topLeftImage();
     }
 
     originalSize(){
@@ -97,6 +104,17 @@ export class ImageOperations {
         this.#image.style.height = 'auto';
         this.#image.style.maxWidth = 'none';
         this.#image.style.maxHeight = 'none';
-    } 
+        this.topLeftImage();
+    }
+    topLeftImage() {
+        this.imageContainer.style.display = '';
+        this.imageContainer.style.alignItems = '';
+        this.imageContainer.style.justifyContent = ''; 
+    }
+    centerTheImage() {
+        this.imageContainer.style.display = 'flex';
+        this.imageContainer.style.alignItems = 'center';
+        this.imageContainer.style.justifyContent = 'center'; 
+    }
 
 }

@@ -32,7 +32,7 @@ module.exports = {
     // on the final bundle. For now, we don't need production's JavaScript
     // minifying and other things, so let's set mode to development
     // https://webpack.js.org/guides/production/
-    mode: 'development',
+    mode: 'production',
     devtool: 'source-map',
 
     //Css minifier https://webpack.js.org/plugins/css-minimizer-webpack-plugin/
