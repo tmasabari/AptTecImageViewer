@@ -1,0 +1,51 @@
+
+/*
+
+//It is possible to provide a pool size (i.e: number of workers), 
+//by default the number of available processors is used.
+//window.AptTec.TiffWorkerPool = new GeoTIFF.Pool(); 
+//uses WebWorkers to split the amount of work on multiple 'threads'. 
+
+// https://github.com/geotiffjs/geotiff.js/
+not working library
+
+export class TiffImageData {
+    construcotr(tiffImage) {
+        this.width = tiffImage.getWidth();
+        this.height = tiffImage.getHeight();    
+        this.tileWidth = tiffImage.getTileWidth();
+        this.tileHeight = tiffImage.getTileHeight();
+        this.samplesPerPixel = tiffImage.getSamplesPerPixel();
+        this.data = null;
+        this.pageCount = 0;
+    }
+}
+        //if (!(source instanceof TiffImageData))  throw new Error(`Mandatory property 'type' must be ImageSources`);
+
+//import GeoTIFF, { fromUrl, fromUrls, fromArrayBuffer, fromBlob } from 'geotiff';
+import {plot} from 'plotty';
+    async showOld() {
+        var tiff;
+        if (this.#type === AptTec.ViewerSources.Url)
+            tiff = await fromUrl(this.#source);
+        else if (this.#type === AptTec.ViewerSources.Blob)
+            tiff = await fromBlob(this.#source);
+
+        const tiffImage = await tiff.getImage(); // by default, the first image is read.
+        const tiffImageData = new TiffImageData(tiffImage);
+        //{ pool:AptTec.TiffWorkerPool }
+        tiffImageData.data = await tiffImage.readRasters();
+
+        const canvas = document.getElementById(this.imageContainer);
+        const plotObject = new plot({
+            canvas,
+            data: tiffImageData.data[0],
+            width: tiffImageData.data.width,
+            height: tiffImageData.data.height,
+            domain: [0, 256],
+            colorScale: "viridis"
+        });
+
+        plotObject.render(); 
+    }
+*/

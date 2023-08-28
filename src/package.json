@@ -1,0 +1,43 @@
+{
+  "name": "apttec-image-viewer",
+  "version": "0.0.1",
+  "description": "AptTec image viewer",
+  "main": "scripts/Viewer.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tmasabari/AptTecImageViewer.git"
+  },
+  "keywords": [
+    "apttec",
+    "image",
+    "viewer",
+    "Tiff",
+    "viewer",
+    "open",
+    "source",
+    "browser"
+  ],
+  "author": "Sabarinathan Arthanari",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tmasabari/AptTecImageViewer/issues"
+  },
+  "homepage": "https://github.com/tmasabari/AptTecImageViewer#readme",
+  "dependencies": {
+    "geotiff": "^2.0.7",
+    "plotty": "^0.4.9"
+  },
+  "devDependencies": {
+    "css-loader": "^6.8.1",
+    "css-minimizer-webpack-plugin": "^5.0.1",
+    "eslint": "^8.48.0",
+    "eslint-plugin-compat": "^4.1.4",
+    "mini-css-extract-plugin": "^2.7.6",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
+  }
+}
