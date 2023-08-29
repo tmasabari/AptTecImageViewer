@@ -2,16 +2,16 @@
   border-collapse:collapse;width: 100%;
 }
 #headerTable .leftHeader {
-  width: 20%;
+  width: 0%;
   text-align:left;
 }
 
 #headerTable .middleHeader {
-  width: 60%; 
+  width: 100%; 
   text-align: center;
 }
 #headerTable .rightHeader {
-  width: 20%;
+  width: 0%;
   text-align:right;
 }
 
@@ -45,7 +45,7 @@ div#viewerZoom > img {
 
 }
 
-.imageToolbar, .navigationToolbar {
+.imageToolbar, .navigationToolbar, .infoToolbar {
   display: inline-block;
 }
 .imageToolbar button,
@@ -65,6 +65,7 @@ div#viewerZoom > img {
     padding-bottom: 3px;
 }
 
+/* https://stackoverflow.com/questions/18531698/css-rotate-image-and-align-top-left */
 .rotate90 {
     -webkit-transform: translateY(-100%) rotate(90deg); /* Safari */
     -moz-transform: translateY(-100%) rotate(90deg); /* Firefox 3.6 Firefox 4 */

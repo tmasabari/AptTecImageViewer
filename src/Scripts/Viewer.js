@@ -8,65 +8,116 @@ window.AptTec = window.AptTec || {};
 
 //https://www.scaler.com/topics/enum-in-javascript/
 window.AptTec.ViewerSources = Object.freeze({
+    //supports both TIFF and browser formats
     Url: 'Url',
     Blob: 'Blob',
-    ArrayBuffer: 'ArrayBuffer'
+    ArrayBuffer: 'ArrayBuffer',
+    //supports native browser file formats only. 
+    //https://en.wikipedia.org/wiki/Comparison_of_web_browsers#Image_format_support
+    //JPEG, GIF, PNG, BMP, ICO, WebP, APNG, 2D Canvas, and SVG(partial)
+    DataURL: 'DataURL'
 });
 
 window.AptTec.Viewer = class TiffViewer {
 
-    #type ='';
+    #viewerSource ='';
     #source= null;
     #imageUri = null;
     #buffer = null;
+    #dataUrl = null;
     #ifds = null;
+    #fileFormat = null;
+    #internalSource = null;
 
-    constructor(type, source, imageContainerId, toolbarContainer, pageToolbarContainer) {
-        if (!type) throw new Error('Mandatory property \'type\' is missing');
-        if (!source) throw new Error('Mandatory property \'source\' is missing');
-        if (!imageContainerId) throw new Error('Mandatory property \'imageContainerId\' is missing');
+    // todo detect file type from array buffer https://www.npmjs.com/package/file-type
+    // https://stackoverflow.com/questions/18299806/how-to-check-file-mime-type-with-javascript-before-upload
+    constructor(viewerSource, source, fileFormat, imageContainerId, toolbarContainer, pageToolbarContainer) {
+        if (!viewerSource) throw new Error('Mandatory argument \'viewerSource\' is missing');
+        if (!source) throw new Error('Mandatory argument \'source\' is missing');
+        if (!fileFormat) throw new Error('Mandatory argument \'fileFormat\' is missing');
+        if (!imageContainerId) throw new Error('Mandatory argument \'imageContainerId\' is missing');
 
-        this.#type = type;
-        if (this.#type === window.AptTec.ViewerSources.ArrayBuffer) {
+        this.#fileFormat = fileFormat;
+        this.#viewerSource = viewerSource;
+        this.#source = source;
+        if (this.#viewerSource === window.AptTec.ViewerSources.ArrayBuffer) {
             this.#buffer = source;
+            this.#internalSource = this.#viewerSource;
         }
-        else {
-            this.#source = source;
+        else if (this.#viewerSource === window.AptTec.ViewerSources.DataURL) {
+            this.#dataUrl = source;
+            this.#internalSource = this.#viewerSource;
         }
         this.imageContainerId = imageContainerId;
         this.toolbarContainer = toolbarContainer;
         this.pageToolbarContainer = pageToolbarContainer;
 
-        this.imageSelector = `#${this.imageContainerId} #tiffImage`;
+        this.imageSelector = `#${this.imageContainerId} #viewerImage`;
         this.imageOperations = new ImageOperations(this.imageContainerId, this.toolbarContainer);
         this.navigationToolbar = null;
     }
     
-    async show(pageIndex=1) {
-        if (this.#buffer) this.loadImage(pageIndex);
+    async show(pageNumber =1) {
+        if (this.#internalSource) 
+            this.loadImage(pageNumber);
 
-        //load the buffer if not already loaded
-        if (this.#type === window.AptTec.ViewerSources.Url) {
+        //load the buffer ONLY if not already loaded
+        if (this.#viewerSource === window.AptTec.ViewerSources.Url) {
             await fetch(this.#source)
-                .then((response) => response.arrayBuffer())
-                .then((buffer) => {  //containing TIFF or EXIF data
-                    this.#buffer= buffer;
-                    this.loadImage(pageIndex); //so the image once the buffer is ready
-                });
+                .then((response) => response.blob() )
+                .then((blob) => this.loadfromBlob(blob, pageNumber));
+        }
+        else if (this.#viewerSource === window.AptTec.ViewerSources.Blob) {
+            await this.loadfromBlob(this.#source, pageNumber);
         }
     }
+    async loadfromBlob(blob, pageNumber) {
+        if (this.#fileFormat.includes('/tif')) {
+            //containing TIFF or EXIF data. conver to to buffer
+            await blob.arrayBuffer()
+                .then(buffer => {
+                    this.#internalSource = window.AptTec.ViewerSources.ArrayBuffer;
+                    this.#buffer = buffer;
+                    this.loadImage(pageNumber); //so load the image as the buffer is ready
+                });
+        } else { //directly convert blob to dataurl
+            this.blobToDataURL(blob, function (dataurl) {
+                this.#internalSource = window.AptTec.ViewerSources.DataURL;
+                this.#dataUrl = dataurl;
+                this.loadImage(pageNumber);
+            });
+        }
+    }
+    //**blob to dataURL**
+    blobToDataURL(blob, callback) {
+        var a = new FileReader();
+        a.onload = (e) => { callback(e.target.result); };
+        a.readAsDataURL(blob);
+    }
+
     //make sure the buffer is loaded before calling the loadImage
-    loadImage(pageIndex) { 
+    loadImage(pageNumber) { 
         const zoomerDiv =  document.getElementById(this.imageContainerId);
         zoomerDiv.innerHTML = ''; //clear the dom
-        zoomerDiv.innerHTML = '<img id="tiffImage" alt="ViewerImage">';
+        zoomerDiv.innerHTML = '<img id="viewerImage" alt="ViewerImage">';
         this.imageOperations.image = document.querySelector(this.imageSelector) ; 
         //delete old uri object
         if (this.#imageUri) URL.revokeObjectURL(this.#imageUri);
-        //containing TIFF or EXIF data
-        this.#imageUri = this.#bufferToURI(this.#buffer, pageIndex);
-        this.imageOperations.image.src = this.#imageUri;
 
+        if (this.#internalSource === window.AptTec.ViewerSources.DataURL) {
+            this.#imageUri = this.#dataUrl;
+            this.pageCount =1;
+        } else {
+            //containing TIFF or EXIF data
+            this.#imageUri = this.#bufferToURI(this.#buffer, pageNumber);
+        }
+
+        if (!(this.navigationToolbar)) { // check the buffer is parsed for the first time
+            // Create an instance of PageNavigationToolbar with this.pageCount pages
+            this.navigationToolbar = new PageNavigationToolbar(this.pageCount, this.pageToolbarContainer,
+                () => this.pagechanged()); // Subscribe to the page change event 
+        }
+        this.imageOperations.image.src = this.#imageUri;
     }
 
     pagechanged() {
@@ -78,22 +129,13 @@ window.AptTec.Viewer = class TiffViewer {
     //taken from UTIF library and modified to select the page
     #bufferToURI(buff, pageNumber) {
         const pageIndex = pageNumber-1;
-
-        if(!(this.navigationToolbar)) { // check the buffer is parsed for the first time
-
+        if (!(this.#ifds)) {
             this.#ifds = UTIF.decode(buff);  //this operation is required only once per document. not for each page.
             //returns an array of "IFDs" (image file directories). ?? Pages
             //Each IFD is an object, keys are "tXYZ" (XYZ is a TIFF tag number), values are values of these tags. 
             //You can get the the dimension (and other properties, "metadata") of the image without decompressing pixel data.
             this.pageCount = this.#ifds.length;
-
-            // Create an instance of PageNavigationToolbar with this.pageCount pages 
-            // eslint-disable-next-line no-unused-vars
-            this.navigationToolbar = new PageNavigationToolbar(this.pageCount, this.pageToolbarContainer,
-                () => this.pagechanged());
-            // Subscribe to the page change event 
         }
-
         var vsns = this.#ifds, ma = 0, page = vsns[pageIndex]; 
         if (this.#ifds[pageIndex].subIFD) vsns = vsns.concat(this.#ifds[pageIndex].subIFD);
         for (var i = 0; i < vsns.length; i++)

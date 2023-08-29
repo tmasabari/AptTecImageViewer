@@ -28,7 +28,8 @@
                 <td class="middleHeader">
                     <strong>
                         <h1><a href="https://apttec.com">AptTec Image Viewer</a></h1>
-                        <h6>TIFF image viewer - Demo page</h6>
+                        <h6>TIFF image viewer - Demo page. Browser supports file formats- JPEG, GIF, PNG, BMP, ICO, WebP, APNG, and SVG(partial). This page supports TIFF as well.
+                        </h6>
                     </strong>
                 </td>
                 <td class="rightHeader" >
@@ -41,6 +42,11 @@
                     <!-- <input title="Load TIFF from URL" id="fromUrl" type="button" onclick="javascript:loadTiff(); return false;" value="Load" /> -->
         <div class="imageToolbar"></div>
         <div class="navigationToolbar"></div>
+        <div class="infoToolbar">
+            <!-- <p><strong>Image Name:</strong> <span class="img-name"></span></p> -->
+            <strong>Type:</strong><span class="img-type"></span>
+            <strong>Size:</strong><span class="img-size"></span>
+        </div>
     </div>
     <div class="zoom_outer">
         <div id="viewerZoom">
@@ -58,22 +64,56 @@
         const fileInput = document.getElementById('fileInput'); 
         fileInput.addEventListener('change', (event) => {
             const selectedFile = event.target.files[0];
+            let info = document.querySelector(".infoToolbar");
+            //let allowedFiles = ['image/jpeg', 'image/jpg', 'image/gif', 'image/png', 'image/tif', 'image/tiff'];
             if (selectedFile) {
+                info.style.display = "inline-block";
+                // document.querySelector(".img-name").innerText = selectedFile.name;
+                document.querySelector(".img-type").innerText = selectedFile.type;
+                document.querySelector(".img-size").innerText = (selectedFile.size/1024).toFixed(3) + "KB";
+                // Check if the browser can directly render the file type
+                if (!selectedFile.type.startsWith('image/') 
+                    && !selectedFile.name.toLowerCase().includes('.tif')) {
+                    //if(!allowedFiles.any(selectedFile.type)) { 
+                    errorMessage.innerText = "File type should be an image";
+                    return;
+                }
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    const fileData = new Uint8Array(e.target.result);
-                    const tiffViewer = new AptTec.Viewer(AptTec.ViewerSources.ArrayBuffer, 
-                        fileData, 'viewerZoom', '.imageToolbar', '.navigationToolbar');
+                    var dataType = null, fileData = null;;
+                    if (selectedFile.type.includes('/tif')
+                        || selectedFile.name.toLowerCase().includes('.tif') ) {
+                        dataType = AptTec.ViewerSources.ArrayBuffer;
+                        fileData = new Uint8Array(e.target.result);
+                    } else {
+                        dataType = AptTec.ViewerSources.DataURL;
+                        fileData = e.target.result;
+                    }
+                    const tiffViewer = new AptTec.Viewer(dataType,
+                        fileData, selectedFile.type, 'viewerZoom', '.imageToolbar', '.navigationToolbar');
+
                     (async function () { await tiffViewer.show(); })();
                     
                 };
-                reader.readAsArrayBuffer(selectedFile);
+                if ( selectedFile.type.includes('/tif') 
+                    || selectedFile.name.toLowerCase().includes('.tif') ) {
+                    reader.readAsArrayBuffer(selectedFile);
+                } else {
+                    // CONVERTS FILE TO BASE 64
+                    reader.readAsDataURL(selectedFile);
+                }
+
+            } else {
+                console.error("Please select a picture"); infoToolbar
+                let errorMessage = document.getElementById("viewerZoom"); 
+                errorMessage.innerText = "Please select a picture";
+                info.style.display = "none";
             }
         });
             
         function loadTiff() {
             const tiffViewer = new AptTec.Viewer(AptTec.ViewerSources.Url,
-                '../Data/Multi_page24bpp.tif', 'tiffImage');
+                '../Data/Multi_page24bpp.tif', 'image/tiff', 'viewerImage');
             (async function () { await tiffViewer.show(); })();
         }  
     </script>
