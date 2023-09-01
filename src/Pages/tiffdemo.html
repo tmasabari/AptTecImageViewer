@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>TIFF Viewer Demo</title>
+    <title>Image Viewer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
 
@@ -16,7 +16,7 @@
         integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
         crossorigin="anonymous" referrerpolicy="no-referrer" /> 
 
-    <link rel="stylesheet" href="../css/viewer.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="../dist/AptTecImageViewer.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
 
 <body>
@@ -28,7 +28,7 @@
                 <td class="middleHeader">
                     <strong>
                         <h1><a href="https://apttec.com">AptTec Image Viewer</a></h1>
-                        <h6>TIFF image viewer - Demo page. Browser supports file formats- JPEG, GIF, PNG, BMP, ICO, WebP, APNG, and SVG(partial). This page supports TIFF as well.
+                        <h6>Image viewer. Browser supports file formats- JPEG, GIF, PNG, BMP, ICO, WebP, APNG, and SVG(partial). This page supports TIFF as well.
                         </h6>
                     </strong>
                 </td>
@@ -39,13 +39,13 @@
     </table>
     <div class="viewerToolbar">
         <input type="file" id="fileInput" title="TIFF file selector" />
-                    <!-- <input title="Load TIFF from URL" id="fromUrl" type="button" onclick="javascript:loadTiff(); return false;" value="Load" /> -->
+                    <!-- <input title="Load TIFF from URL" id="fromUrl" type="button" onclick="javascript:loadTiffFromUrl(); return false;" value="Load" /> -->
         <div class="imageToolbar"></div>
         <div class="navigationToolbar"></div>
         <div class="infoToolbar">
             <!-- <p><strong>Image Name:</strong> <span class="img-name"></span></p> -->
-            <strong>Type:</strong><span class="img-type"></span>
-            <strong>Size:</strong><span class="img-size"></span>
+            <strong>Type: </strong><span class="img-type"></span>
+            <strong> Size: </strong><span class="img-size"></span>
         </div>
     </div>
     <div class="zoom_outer">
@@ -60,62 +60,16 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
     <script src="../dist/AptTecImageViewer.bundle.js" type="module" crossorigin="anonymous"></script>
-    <script >
-        const fileInput = document.getElementById('fileInput'); 
-        fileInput.addEventListener('change', (event) => {
-            const selectedFile = event.target.files[0];
-            let info = document.querySelector(".infoToolbar");
-            //let allowedFiles = ['image/jpeg', 'image/jpg', 'image/gif', 'image/png', 'image/tif', 'image/tiff'];
-            if (selectedFile) {
-                info.style.display = "inline-block";
-                // document.querySelector(".img-name").innerText = selectedFile.name;
-                document.querySelector(".img-type").innerText = selectedFile.type;
-                document.querySelector(".img-size").innerText = (selectedFile.size/1024).toFixed(3) + "KB";
-                // Check if the browser can directly render the file type
-                if (!selectedFile.type.startsWith('image/') 
-                    && !selectedFile.name.toLowerCase().includes('.tif')) {
-                    //if(!allowedFiles.any(selectedFile.type)) { 
-                    errorMessage.innerText = "File type should be an image";
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    var dataType = null, fileData = null;;
-                    if (selectedFile.type.includes('/tif')
-                        || selectedFile.name.toLowerCase().includes('.tif') ) {
-                        dataType = AptTec.ViewerSources.ArrayBuffer;
-                        fileData = new Uint8Array(e.target.result);
-                    } else {
-                        dataType = AptTec.ViewerSources.DataURL;
-                        fileData = e.target.result;
-                    }
-                    const tiffViewer = new AptTec.Viewer(dataType,
-                        fileData, selectedFile.type, 'viewerZoom', '.imageToolbar', '.navigationToolbar');
-
-                    (async function () { await tiffViewer.show(); })();
-                    
-                };
-                if ( selectedFile.type.includes('/tif') 
-                    || selectedFile.name.toLowerCase().includes('.tif') ) {
-                    reader.readAsArrayBuffer(selectedFile);
-                } else {
-                    // CONVERTS FILE TO BASE 64
-                    reader.readAsDataURL(selectedFile);
-                }
-
-            } else {
-                console.error("Please select a picture"); infoToolbar
-                let errorMessage = document.getElementById("viewerZoom"); 
-                errorMessage.innerText = "Please select a picture";
-                info.style.display = "none";
-            }
-        });
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const fileInputViewer = new window.AptTec.FileInputViewer('fileInput',
+                'viewerZoom', '.imageToolbar', '.navigationToolbar', '.infoToolbar'); 
             
-        function loadTiff() {
-            const tiffViewer = new AptTec.Viewer(AptTec.ViewerSources.Url,
-                '../Data/Multi_page24bpp.tif', 'image/tiff', 'viewerImage');
-            (async function () { await tiffViewer.show(); })();
-        }  
+            // var imageDownloadUrl = '../Data/Multi_page24bpp.tif';
+            // const tiffViewer = new AptTec.Viewer(AptTec.ViewerSources.Url,
+            //     imageDownloadUrl, 'image/tiff', 'viewerZoom', '.imageToolbar', '.navigationToolbar');
+            // (async function () { await tiffViewer.show(); })();
+        });
     </script>
 </body>
 
