@@ -8,6 +8,9 @@ export class fileInputViewer {
         this.infoToolbarContainer = infoToolbarContainer;
 
         this.infoToolbarControl = document.querySelector(this.infoToolbarContainer);
+        this.infoToolbarControl.innerHTML =
+            `<strong>Type: </strong><span class="img-type"></span>
+                <strong> Size: </strong><span class="img-size"></span>`;
         this.selectedFileType = null; 
 
         const fileInputControl = document.getElementById(this.fileIputId);
@@ -15,14 +18,18 @@ export class fileInputViewer {
     }
 
     #OnFileInputChanged(event) {
-        const selectedFile = event.target.files[0];
         //let allowedFiles = ['image/jpeg', 'image/jpg', 'image/gif', 'image/png', 'image/tif', 'image/tiff'];
-        if (selectedFile) {
+        if (event.target.files.length > 0) {
+            const selectedFile = event.target.files[0];
+
             this.selectedFileType = selectedFile.type;
             this.infoToolbarControl.style.display = 'inline-block';
+
             // document.querySelector(".img-name").innerText = selectedFile.name;
-            document.querySelector('.img-type').innerText = this.selectedFileType;
-            document.querySelector('.img-size').innerText = (selectedFile.size / 1024).toFixed(3) + ' KB';
+            document.querySelector(this.infoToolbarContainer + ' .img-type').innerText 
+                = this.selectedFileType;
+            document.querySelector(this.infoToolbarContainer + ' .img-size').innerText 
+                = (selectedFile.size / 1024).toFixed(3) + ' KB';
             // Check if the browser can directly render the file type
             if (!this.selectedFileType.startsWith('image/')
                 && !selectedFile.name.toLowerCase().includes('.tif')) {

@@ -1,4 +1,5 @@
 import UTIF from './UTIF.js';
+import { Downloader } from './Downloader.js';
 import { ImageOperations } from './ImageOperations.js';
 import { PageNavigationToolbar } from './PageNavigationToolbar.js';
 
@@ -46,9 +47,9 @@ export class BaseViewer {
 
         //load the buffer ONLY if not already loaded
         if (this.#viewerSource === window.AptTec.ViewerSources.Url) {
-            await fetch(this.#source)
-                .then((response) => response.blob() )
-                .then((blob) => this.loadfromBlob(blob, pageNumber));
+            const chunkedDownloader = new Downloader(this.#source); 
+            const blob = await chunkedDownloader.download();
+            this.loadfromBlob(blob, pageNumber);
         }
         else if (this.#viewerSource === window.AptTec.ViewerSources.Blob) {
             await this.loadfromBlob(this.#source, pageNumber);
@@ -64,7 +65,7 @@ export class BaseViewer {
                     this.loadImage(pageNumber); //so load the image as the buffer is ready
                 });
         } else { //directly convert blob to dataurl
-            this.blobToDataURL(blob, function (dataurl) {
+            this.blobToDataURL(blob, (dataurl) => {
                 this.#internalSource = window.AptTec.ViewerSources.DataURL;
                 this.#dataUrl = dataurl;
                 this.loadImage(pageNumber);
@@ -120,15 +121,17 @@ export class BaseViewer {
             //You can get the the dimension (and other properties, "metadata") of the image without decompressing pixel data.
             this.pageCount = this.#ifds.length;
         }
-        var vsns = this.#ifds, ma = 0, page = vsns[pageIndex]; 
-        if (this.#ifds[pageIndex].subIFD) vsns = vsns.concat(this.#ifds[pageIndex].subIFD);
-        for (var i = 0; i < vsns.length; i++)
-        {
-            var img = vsns[i];
-            if (img['t258'] == null || img['t258'].length < 3) continue;
-            var ar = img['t256'] * img['t257'];
-            if (ar > ma) { ma = ar; page = img; }
-        }
+        //the below commented lines taken from UTIF library but they are not inline with other viewer tools and it is not taking correct page information.
+        // var vsns = this.#ifds, ma = 0, page = vsns[pageIndex]; 
+        // if (this.#ifds[pageIndex].subIFD) vsns = vsns.concat(this.#ifds[pageIndex].subIFD);
+        // for (var i = 0; i < vsns.length; i++)
+        // {
+        //     var img = vsns[i];
+        //     if (img['t258'] == null || img['t258'].length < 3) continue;
+        //     var ar = img['t256'] * img['t257'];
+        //     if (ar > ma) { ma = ar; page = img; }
+        // }
+        const page = this.#ifds[pageIndex];
         UTIF.decodeImage(buff, page, this.#ifds);
         //If there is an image inside the IFD, it is decoded and three new properties are added to the IFD:
         //width: the width of the image

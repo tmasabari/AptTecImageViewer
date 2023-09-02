@@ -39,5 +39,12 @@
     "mini-css-extract-plugin": "^2.7.6",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4"
-  }
+  },
+  "browserslist": [
+      "> 0.3%",
+      "last 2 versions",
+      "not dead",
+      "Firefox ESR",
+      "not op_mini all"
+    ] 
 }

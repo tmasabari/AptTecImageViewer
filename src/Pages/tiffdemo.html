@@ -39,19 +39,12 @@
     </table>
     <div class="viewerToolbar">
         <input type="file" id="fileInput" title="TIFF file selector" />
-                    <!-- <input title="Load TIFF from URL" id="fromUrl" type="button" onclick="javascript:loadTiffFromUrl(); return false;" value="Load" /> -->
         <div class="imageToolbar"></div>
         <div class="navigationToolbar"></div>
-        <div class="infoToolbar">
-            <!-- <p><strong>Image Name:</strong> <span class="img-name"></span></p> -->
-            <strong>Type: </strong><span class="img-type"></span>
-            <strong> Size: </strong><span class="img-size"></span>
-        </div>
+        <div class="infoToolbar"></div>
     </div>
     <div class="zoom_outer">
-        <div id="viewerZoom">
-            <!-- image tag will be created here -->
-        </div>
+        <div id="viewerZoom"> <!-- image tag will be created here --> </div>
     </div> 
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"
         integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
@@ -63,9 +56,9 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const fileInputViewer = new window.AptTec.FileInputViewer('fileInput',
-                'viewerZoom', '.imageToolbar', '.navigationToolbar', '.infoToolbar'); 
-            
-            // var imageDownloadUrl = '../Data/Multi_page24bpp.tif';
+               'viewerZoom', '.imageToolbar', '.navigationToolbar', '.infoToolbar'); 
+            //../Data/Large-Sample-Image-download-for-Testing.jpg
+            //var imageDownloadUrl = '../Data/Multi_page24bpp.tiff';
             // const tiffViewer = new AptTec.Viewer(AptTec.ViewerSources.Url,
             //     imageDownloadUrl, 'image/tiff', 'viewerZoom', '.imageToolbar', '.navigationToolbar');
             // (async function () { await tiffViewer.show(); })();

@@ -66,7 +66,7 @@ export class ImageOperations {
             });
         }
         button.classList.add('btn', 'rotate-button');
-        if (iconClass) button.innerHTML = `<i class="fas ${iconClass}"></i>`;
+        if (iconClass) button.innerHTML = `<i class="${iconClass}"></i>`;
         button.innerHTML += ` ${label}`;
         button.addEventListener('click', onClick);
         return button;

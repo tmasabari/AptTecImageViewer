@@ -2,7 +2,7 @@ module.exports = {
     'env': {
         'browser': true,
         'es2021': true,
-        'jquery': true
+        //'jquery': true
     },
     //exclude built files, third party libraries and config files
     'ignorePatterns': ['dist/**', 'Scripts/UTIF.js', 'webpack.config.js'],
