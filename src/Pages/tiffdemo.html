@@ -17,6 +17,24 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" /> 
 
     <link rel="stylesheet" href="../dist/AptTecImageViewer.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <style>
+        #headerTable {
+            border-collapse:collapse;width: 100%;
+        }
+        #headerTable .leftHeader {
+            width: 0%;
+            text-align:left;
+        }
+
+        #headerTable .middleHeader {
+            width: 100%; 
+            text-align: center;
+        }
+        #headerTable .rightHeader {
+            width: 0%;
+            text-align:right;
+        } 
+    </style>
 </head>
 
 <body>
@@ -38,13 +56,19 @@
         </tbody>
     </table>
     <div class="viewerToolbar">
-        <input type="file" id="fileInput" title="TIFF file selector" />
+        <div class="file-input-container">
+            <label class="custom-file-input-label" for="fileInput">Open</label>
+            <!-- https://stackoverflow.com/questions/4328947/limit-file-format-when-using-input-type-file -->
+            <input type="file" id="fileInput"  accept="image/*" title="Image file selector" />
+        </div>
+        <div> <input type="button" id="loadTiff" onclick="LoadTiffSample(); return false;" value="TiffSample"/> 
+            <input type="button" id="loadJpeg" onclick="LoadJpegSample(); return false;" value="JpegSample" /></div>
         <div class="imageToolbar"></div>
         <div class="navigationToolbar"></div>
         <div class="infoToolbar"></div>
     </div>
-    <div class="zoom_outer">
-        <div id="viewerZoom"> <!-- image tag will be created here --> </div>
+    <div class="AptTecViewer">
+        <div id="viewerZoom" class="viewerZoom"> <!-- image tag will be created here --> </div>
     </div> 
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"
         integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
@@ -56,13 +80,21 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const fileInputViewer = new window.AptTec.FileInputViewer('fileInput',
-               'viewerZoom', '.imageToolbar', '.navigationToolbar', '.infoToolbar'); 
-            //../Data/Large-Sample-Image-download-for-Testing.jpg
-            //var imageDownloadUrl = '../Data/Multi_page24bpp.tiff';
-            // const tiffViewer = new AptTec.Viewer(AptTec.ViewerSources.Url,
-            //     imageDownloadUrl, 'image/tiff', 'viewerZoom', '.imageToolbar', '.navigationToolbar');
-            // (async function () { await tiffViewer.show(); })();
+                'viewerZoom', '.imageToolbar', '.navigationToolbar', '.infoToolbar'); 
+
         });
+        function LoadTiffSample() {
+            const tiffViewer = new AptTec.Viewer(AptTec.ViewerSources.Url,
+                '../Data/Multi_page24bpp.tiff', 
+                'image/tiff', 'viewerZoom', '.imageToolbar', '.navigationToolbar');
+            (async function () { await tiffViewer.show(); })();
+        }
+        function LoadJpegSample() {
+            const tiffViewer = new AptTec.Viewer(AptTec.ViewerSources.Url,
+                '../Data/Large-Sample-Image-download-for-Testing.jpg', 
+                'image/jpeg', 'viewerZoom', '.imageToolbar', '.navigationToolbar');
+            (async function () { await tiffViewer.show(); })();
+        }
     </script>
 </body>
 

@@ -1,34 +1,14 @@
-#headerTable {
-  border-collapse:collapse;width: 100%;
-}
-#headerTable .leftHeader {
-  width: 0%;
-  text-align:left;
-}
 
-#headerTable .middleHeader {
-  width: 100%; 
-  text-align: center;
-}
-#headerTable .rightHeader {
-  width: 0%;
-  text-align:right;
-}
-
-.previewParent>input {
-    float: left;
-}
-
-Zoomer * {
+.AptTecViewer * {
   padding: 0;
   margin: 0;
   outline: 0;
   overflow: hidden;
-}
+} 
+.AptTecViewer .viewerZoom {
+  position: relative;
+  display: inline-block;
 
-#viewerZoom {
-            position: relative;
-            display: inline-block;
   width: 100%;
   /* height: 100%; */
   border: solid grey;
@@ -38,35 +18,14 @@ Zoomer * {
   transform: scale(1) translate(0px, 0px);
   cursor: grab;
 } 
-div#viewerZoom > img {
+.AptTecViewer .viewerZoom > img {
   border: solid greenyellow;
             cursor: grab;
             /* transform-origin: top left; */
 
 }
-
-.imageToolbar, .navigationToolbar, .infoToolbar {
-  display: inline-block;
-}
-.imageToolbar button,
-.navigationToolbar button,
-.imageToolbar span,
-.navigationToolbar span {
-  margin-right: 5px;
-  padding-top: 1px;
-  padding-bottom: 1px;
-  }
-.imageToolbar, .rotateRight {
-  margin-right: 30px;
-}
-.viewerToolbar {
-  background-color: #f1ecec;
-    padding-top: 3px;
-    padding-bottom: 3px;
-}
-
 /* https://stackoverflow.com/questions/18531698/css-rotate-image-and-align-top-left */
-.rotate90 {
+.AptTecViewer .rotate90 {
     -webkit-transform: translateY(-100%) rotate(90deg); /* Safari */
     -moz-transform: translateY(-100%) rotate(90deg); /* Firefox 3.6 Firefox 4 */
     /*-moz-transform-origin: right top; */
@@ -80,7 +39,7 @@ div#viewerZoom > img {
     transform-origin: left bottom;
 }
 
-.rotate270 {
+.AptTecViewer .rotate270 {
     -webkit-transform: translateX(-100%) rotate(-90deg); /* Safari */
     -moz-transform: translateX(-100%) rotate(-90deg); /* Firefox 3.6 Firefox 4 */
     -ms-transform: translateX(-100%) rotate(-90deg); /* IE9 */
@@ -91,4 +50,60 @@ div#viewerZoom > img {
     -ms-transform-origin: top right;
     -o-transform-origin: top right;
     transform-origin: top right;
+}
+
+
+.viewerToolbar {
+  background-color: #f1ecec;
+  padding-top: 3px;
+  padding-bottom: 3px;
+
+  display: flex;
+  align-items: center;
+}
+
+.viewerToolbar .imageToolbar,
+.viewerToolbar .navigationToolbar,
+.viewerToolbar .infoToolbar {
+  display: inline-block;
+}
+.viewerToolbar .infoToolbar {
+  display: none;
+}
+
+.viewerToolbar .imageToolbar button,
+.viewerToolbar .navigationToolbar button,
+.viewerToolbar .imageToolbar span,
+.viewerToolbar .navigationToolbar span {
+  margin-right: 5px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  }
+.viewerToolbar .imageToolbar,
+.viewerToolbar  .rotateRight {
+  margin-right: 30px;
+}
+
+/* Style the container for the file input */
+.file-input-container {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+}
+
+/* Style the actual file input (hidden) */
+.file-input-container input[type="file"] {
+    position: absolute;
+    font-size: 100px;
+    right: 0;
+    top: 0;
+    opacity: 0;
+}
+
+/* Style the button or label to trigger the file input */
+.custom-file-input-label {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    cursor: pointer;
 }

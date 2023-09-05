@@ -1,12 +1,15 @@
 export class fileInputViewer {
 
-    constructor(fileIputId, imageContainerId, toolbarContainer, pageToolbarContainer, infoToolbarContainer) {
+    constructor(fileIputId, imageContainerId, imageToolbarContainer, 
+        pageToolbarContainer, infoToolbarContainer) {
         this.fileIputId = fileIputId;
         this.imageContainerId = imageContainerId;
-        this.toolbarContainer = toolbarContainer;
+        this.imageToolbarContainer = imageToolbarContainer;
         this.pageToolbarContainer = pageToolbarContainer;
         this.infoToolbarContainer = infoToolbarContainer;
 
+        this.imageToolbarControl = document.querySelector(this.imageToolbarContainer);
+        this.pageToolbarControl = document.querySelector(this.pageToolbarContainer);
         this.infoToolbarControl = document.querySelector(this.infoToolbarContainer);
         this.infoToolbarControl.innerHTML =
             `<strong>Type: </strong><span class="img-type"></span>
@@ -23,6 +26,9 @@ export class fileInputViewer {
             const selectedFile = event.target.files[0];
 
             this.selectedFileType = selectedFile.type;
+
+            this.imageToolbarControl.style.display = 'inline-block';
+            this.pageToolbarControl.style.display = 'inline-block';
             this.infoToolbarControl.style.display = 'inline-block';
 
             // document.querySelector(".img-name").innerText = selectedFile.name;
@@ -63,7 +69,7 @@ export class fileInputViewer {
         }
         const tiffViewer = new window.AptTec.Viewer(dataType,
             fileData, this.selectedFileType, 
-            this.imageContainerId, this.toolbarContainer, this.pageToolbarContainer);
+            this.imageContainerId, this.imageToolbarContainer, this.pageToolbarContainer);
 
         (async function () { await tiffViewer.show(); })();
 
@@ -71,7 +77,10 @@ export class fileInputViewer {
 
     #showError(message) {
         this.errorMessageControl = document.getElementById(this.imageContainerId);
-        this.errorMessageControl.innerText = message;
+        this.errorMessageControl.innerHTML = `<h1>${message}</h1>`;
+
+        this.imageToolbarControl.style.display = 'none';
+        this.pageToolbarControl.style.display = 'none';
         this.infoToolbarControl.style.display = 'none';
     }
 

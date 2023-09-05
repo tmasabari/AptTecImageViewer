@@ -4,10 +4,9 @@ export class Downloader {
         this.chunkSize = chunkSize;
         this.maxRetries = maxRetries;
         this.retryDelay = retryDelay;
+        this.chunkCompleted = new Event('chunkCompleted');
     }
-    getCompletedEvent(data) {
-        return new CustomEvent('chunkCompleted', { bubbles: true }, data);
-    }
+
     async download() {
         try {
             // Check if the server supports byte-range requests and get file length.
@@ -52,93 +51,92 @@ export class Downloader {
     async downloadChunked(fileLength) {
         const totalSize = fileLength;
         const chunks = [];
-        let downloadedSize = 0;
-        let retryCount = 0;
+        let startByte = 0;
 
-        while (downloadedSize < totalSize) {
-            try {
-                const response = await fetch(this.url, {
-                    headers: {
-                        Range: `bytes=${downloadedSize}-${downloadedSize + this.chunkSize - 1}`,
-                    },
-                });
+        const promises = [];
 
-                if (!response.ok) {
-                    throw new Error(`Chunk download failed with status code: ${response.status}`);
-                }
+        while (startByte < totalSize) {
+            const endByte = Math.min(startByte + this.chunkSize - 1, totalSize - 1);
+            const closureBlock = () => { //create a closure funciton to maintain the start and end variables
+                const start = startByte, end = endByte;
+                const promise = this.downloadChunk(start, end)
+                    .then((chunk) => {
+                        chunks.push({ start, chunk });
 
-                const { value, done } = await response.body.getReader().read();
+                        // Calculate and dispatch the download progress.
+                        const downloadedSize = end - start  + 1;
+                        const progress = (downloadedSize / totalSize) * 100;
+                        this.chunkCompleted.detail = {
+                            downloadedSize,
+                            totalSize,
+                            progress,
+                        };
+                        document.dispatchEvent(this.chunkCompleted);
 
-                if (done) {
-                    throw new Error('Unexpected end of chunk.');
-                }
-
-                downloadedSize += value.length;
-                // Push the chunk into the array along with its starting byte position.
-                chunks.push({ data: value, start: downloadedSize - value.length });
-
-                // Calculate and dispatch the download progress.
-                const progress = (downloadedSize / totalSize) * 100;
-                window.dispatchEvent(this.getCompletedEvent({
-                    downloadedSize,
-                    totalSize,
-                    progress,
-                }));
-
-                // You can update a progress bar or display the progress to the user here.
-            } catch (error) {
-                console.error('Chunk download error:', error);
-
-                // Retry the chunk download if the maximum retry count is not exceeded.
-                if (retryCount < this.maxRetries) {
-                    retryCount++;
-                    await new Promise((resolve) => setTimeout(resolve, this.retryDelay));
-                    console.log(`Retrying chunk download (Retry ${retryCount})...`);
-                } else {
-                    throw error; // Max retries reached, propagate the error.
-                }
-            }
+                        // You can update a progress bar or display the progress to the user here.
+                    })
+                    .catch((error) => {
+                        // Handle download error, including retries.
+                        return this.handleDownloadError(error, start, end);
+                    });
+                promises.push(promise);
+            };
+            closureBlock();
+            startByte = endByte + 1;
         }
 
-        // Sort the downloaded chunks by their start byte position.
+        // Wait for all chunk promises to complete.
+        await Promise.all(promises);
+
+        // Sort the chunks by their startByte to ensure they are in the correct order.
         chunks.sort((a, b) => a.start - b.start);
-        // Assemble the chunks in order to create the final blob.
-        const blobData = new Uint8Array(totalSize);
-        let currentIndex = 0; 
-        for (const chunk of chunks) {
-            blobData.set(chunk.data, currentIndex);
-            currentIndex += chunk.data.length;
-        } 
-        const blob = new Blob([blobData]);
+
+        // Concatenate the chunks in order to create the final Blob.
+        const blob = new Blob(chunks.map((chunkData) => chunkData.chunk));
         return blob;
     }
 
-    async downloadSimple() {
-        let retryCount = 0;
+    async downloadChunk(startByte, endByte, isSimple = false) {
+        const response = isSimple ? await fetch(this.url) :
+            await fetch(this.url, {
+                headers: {
+                    Range: `bytes=${startByte}-${endByte}`,
+                },
+            });
 
-        // eslint-disable-next-line no-constant-condition
-        while (true) {
-            try {
-                const response = await fetch(this.url);
-        
-                if (!response.ok) {
-                    throw new Error(`Simple download failed with status code: ${response.status}`);
-                }
-        
-                const blob = await response.blob();
-                return blob;
-            } catch (error) {
-                console.error('Simple download error:', error);
+        if (!response.ok) {
+            throw new Error(`Chunk download failed with status code: ${response.status}`);
+        }
+        // const body = await response.body;
+        // const readResult = await body.getReader().read();
+        // const { value, done } = readResult;
 
-                // Retry the simple download if the maximum retry count is not exceeded.
-                if (retryCount < this.maxRetries) {
-                    retryCount++;
-                    await new Promise((resolve) => setTimeout(resolve, this.retryDelay));
-                    console.log(`Retrying simple download (Retry ${retryCount})...`);
-                } else {
-                    throw error; // Max retries reached, propagate the error.
-                }
-            }
+        // if (done) {
+        //     throw new Error('Unexpected end of chunk.');
+        // }
+
+        const value = await response.arrayBuffer();
+        return value;
+    }
+
+    async downloadSimple(fileLength) {
+        const totalSize = fileLength;
+        const buffer = await this.downloadChunk(0, totalSize - 1, true);
+        return new Blob([buffer] );
+    }
+
+    async handleDownloadError(error, startByte, endByte) {
+        console.error('Chunk download error:', error);
+
+        if (this.maxRetries > 0) {
+            // Retry the chunk download with exponential backoff.
+            await new Promise((resolve) => setTimeout(resolve, this.retryDelay));
+            console.log('Retrying chunk download...');
+            this.maxRetries--;
+            return this.handleDownloadError(
+                await this.downloadChunk(startByte, endByte), startByte, endByte );
+        } else {
+            throw error; // Max retries reached, propagate the error.
         }
     }
 }
