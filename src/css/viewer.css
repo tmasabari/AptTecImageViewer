@@ -12,7 +12,7 @@
   width: 100%;
   /* height: 100%; */
   border: solid grey;
-  height: calc(100vh - 120px);
+  height: calc(100vh - 40px);
   overflow: scroll;
   /* transform-origin: 0px 0px; */
   transform: scale(1) translate(0px, 0px);
@@ -71,10 +71,8 @@
   display: none;
 }
 
-.viewerToolbar .imageToolbar button,
-.viewerToolbar .navigationToolbar button,
-.viewerToolbar .imageToolbar span,
-.viewerToolbar .navigationToolbar span {
+.viewerToolbar button,
+.viewerToolbar span {
   margin-right: 5px;
   padding-top: 1px;
   padding-bottom: 1px;
@@ -102,8 +100,26 @@
 
 /* Style the button or label to trigger the file input */
 .custom-file-input-label {
-    background-color: #007bff;
     color: #fff;
     padding: 10px 20px;
     cursor: pointer;
+}
+
+.centerToParent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    height: 100%;
+    width: 100%;
+}
+
+.xxlargeText {
+    font-size: xx-large;
+}
+
+.hide {
+  display: none;
 }

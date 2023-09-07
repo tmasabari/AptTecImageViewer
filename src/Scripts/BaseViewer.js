@@ -15,7 +15,8 @@ export class BaseViewer {
 
     // todo detect file type from array buffer https://www.npmjs.com/package/file-type
     // https://stackoverflow.com/questions/18299806/how-to-check-file-mime-type-with-javascript-before-upload
-    constructor(viewerSource, source, fileFormat, imageContainerId, toolbarContainer, pageToolbarContainer) {
+    constructor(viewerSource, source, fileFormat, imageContainerId, toolbarContainer, pageToolbarContainer,
+        progressContainer) {
         if (!viewerSource) throw new Error('Mandatory argument \'viewerSource\' is missing');
         if (!source) throw new Error('Mandatory argument \'source\' is missing');
         if (!fileFormat) throw new Error('Mandatory argument \'fileFormat\' is missing');
@@ -35,26 +36,55 @@ export class BaseViewer {
         this.imageContainerId = imageContainerId;
         this.toolbarContainer = toolbarContainer;
         this.pageToolbarContainer = pageToolbarContainer;
+        this.progressContainer = progressContainer;
+
+        this.zoomerDiv = document.querySelector('#' + imageContainerId);
+        this.zoomerDiv.innerHTML = '';
 
         this.imageSelector = `#${this.imageContainerId} #viewerImage`;
         this.imageOperations = new ImageOperations(this.imageContainerId, this.toolbarContainer);
         this.navigationToolbar = null;
+        this.progressSpinner = document.querySelector('.progress-spinner');
+
+        // Add an event listener to handle the chunkCompleted event.
+        document.addEventListener('chunkCompleted', (event) => {
+            const { downloadedSize, totalSize, progress } = event.detail;
+            const message = `Loading: ${downloadedSize} / ${totalSize} bytes (${progress.toFixed(2)}%)`;
+            this.showMessage(message);
+        });
+    }
+    showMessage(message) {
+        console.log(message);
+        this.messageControl = document.querySelector(this.progressContainer);
+        this.messageControl.innerHTML = `${message}`;
+        this.messageControl.style.display = 'flex';
     }
     
     async show(pageNumber =1) {
-        if (this.#internalSource) 
-            this.loadImage(pageNumber);
+        this.showMessage('Loading...');
+        try {
+            //this.progressSpinner.style.display = 'block';
+            if (this.#internalSource) 
+                this.loadImage(pageNumber);
 
-        //load the buffer ONLY if not already loaded
-        if (this.#viewerSource === window.AptTec.ViewerSources.Url) {
-            const chunkedDownloader = new Downloader(this.#source); 
-            const blob = await chunkedDownloader.download();
-            this.loadfromBlob(blob, pageNumber);
+            //load the buffer ONLY if not already loaded
+            if (this.#viewerSource === window.AptTec.ViewerSources.Url) {
+                const chunkedDownloader = new Downloader(this.#source);
+                const blob = await chunkedDownloader.download();
+                this.loadfromBlob(blob, pageNumber);
+            }
+            else if (this.#viewerSource === window.AptTec.ViewerSources.Blob) {
+                await this.loadfromBlob(this.#source, pageNumber);
+            }
+                
+        } catch (error) {
+            console.error(error);
         }
-        else if (this.#viewerSource === window.AptTec.ViewerSources.Blob) {
-            await this.loadfromBlob(this.#source, pageNumber);
-        }
+
+        this.messageControl.style.display = 'none';
+        //this.progressSpinner.style.display = 'none';
     }
+    
     async loadfromBlob(blob, pageNumber) {
         if (this.#fileFormat.includes('/tif')) {
             //containing TIFF or EXIF data. conver to to buffer
@@ -82,9 +112,7 @@ export class BaseViewer {
 
     //make sure the buffer is loaded before calling the loadImage
     loadImage(pageNumber) { 
-        const zoomerDiv =  document.getElementById(this.imageContainerId);
-        zoomerDiv.innerHTML = ''; //clear the dom
-        zoomerDiv.innerHTML = '<img id="viewerImage" alt="ViewerImage">';
+        this.zoomerDiv.innerHTML = '<img id="viewerImage" alt="ViewerImage">';
         this.imageOperations.image = document.querySelector(this.imageSelector) ; 
         //delete old uri object
         if (this.#imageUri) URL.revokeObjectURL(this.#imageUri);

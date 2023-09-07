@@ -1,13 +1,13 @@
 export class fileInputViewer {
 
     constructor(fileIputId, imageContainerId, imageToolbarContainer, 
-        pageToolbarContainer, infoToolbarContainer) {
+        pageToolbarContainer, infoToolbarContainer, progressContainer) {
         this.fileIputId = fileIputId;
         this.imageContainerId = imageContainerId;
         this.imageToolbarContainer = imageToolbarContainer;
         this.pageToolbarContainer = pageToolbarContainer;
         this.infoToolbarContainer = infoToolbarContainer;
-
+        this.progressContainer = progressContainer;
         this.imageToolbarControl = document.querySelector(this.imageToolbarContainer);
         this.pageToolbarControl = document.querySelector(this.pageToolbarContainer);
         this.infoToolbarControl = document.querySelector(this.infoToolbarContainer);
@@ -67,17 +67,17 @@ export class fileInputViewer {
             dataType = window.AptTec.ViewerSources.DataURL;
             fileData = e.target.result;
         }
-        const tiffViewer = new window.AptTec.Viewer(dataType,
+        this.tiffViewer = new window.AptTec.Viewer(dataType,
             fileData, this.selectedFileType, 
-            this.imageContainerId, this.imageToolbarContainer, this.pageToolbarContainer);
-
-        (async function () { await tiffViewer.show(); })();
+            this.imageContainerId, this.imageToolbarContainer, this.pageToolbarContainer, this.progressContainer);
+        
+        (async function (tiffViewer) { await tiffViewer.show(); })(this.tiffViewer);
 
     }
 
     #showError(message) {
-        this.errorMessageControl = document.getElementById(this.imageContainerId);
-        this.errorMessageControl.innerHTML = `<h1>${message}</h1>`;
+        if (this.tiffViewer)
+            this.tiffViewer.showMessage(message);
 
         this.imageToolbarControl.style.display = 'none';
         this.pageToolbarControl.style.display = 'none';

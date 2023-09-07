@@ -52,7 +52,7 @@ export class Downloader {
         const totalSize = fileLength;
         const chunks = [];
         let startByte = 0;
-
+        var downloadedSize=0;
         const promises = [];
 
         while (startByte < totalSize) {
@@ -64,7 +64,7 @@ export class Downloader {
                         chunks.push({ start, chunk });
 
                         // Calculate and dispatch the download progress.
-                        const downloadedSize = end - start  + 1;
+                        downloadedSize += end - start  + 1;
                         const progress = (downloadedSize / totalSize) * 100;
                         this.chunkCompleted.detail = {
                             downloadedSize,
@@ -97,11 +97,10 @@ export class Downloader {
     }
 
     async downloadChunk(startByte, endByte, isSimple = false) {
-        const response = isSimple ? await fetch(this.url) :
-            await fetch(this.url, {
-                headers: {
-                    Range: `bytes=${startByte}-${endByte}`,
-                },
+        const response = isSimple 
+            ? await fetch(this.url) 
+            :  await fetch(this.url, {
+                headers: { Range: `bytes=${startByte}-${endByte}` },
             });
 
         if (!response.ok) {
