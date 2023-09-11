@@ -67,17 +67,17 @@ export class fileInputViewer {
             dataType = window.AptTec.ViewerSources.DataURL;
             fileData = e.target.result;
         }
-        this.tiffViewer = new window.AptTec.Viewer(dataType,
+        const tiffViewer = new window.AptTec.Viewer(dataType,
             fileData, this.selectedFileType, 
             this.imageContainerId, this.imageToolbarContainer, this.pageToolbarContainer, this.progressContainer);
-        
-        (async function (tiffViewer) { await tiffViewer.show(); })(this.tiffViewer);
+        window.tiffViewer = tiffViewer;
+        (async function (tiffViewer) { await tiffViewer.show(); })(window.tiffViewer);
 
     }
 
     #showError(message) {
-        if (this.tiffViewer)
-            this.tiffViewer.showMessage(message);
+        if (window.tiffViewer)
+            window.tiffViewer.showMessage(message);
 
         this.imageToolbarControl.style.display = 'none';
         this.pageToolbarControl.style.display = 'none';

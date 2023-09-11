@@ -2,6 +2,9 @@ import UTIF from './UTIF.js';
 import { Downloader } from './Downloader.js';
 import { ImageOperations } from './ImageOperations.js';
 import { PageNavigationToolbar } from './PageNavigationToolbar.js';
+import { jsPDF } from 'jspdf';
+// todo https://github.com/WangYuLue/image-conversion
+//import * as imageConversion from 'image-conversion';
 
 export class BaseViewer {
     #viewerSource ='';
@@ -33,6 +36,7 @@ export class BaseViewer {
             this.#dataUrl = source;
             this.#internalSource = this.#viewerSource;
         }
+        this.page = null;
         this.imageContainerId = imageContainerId;
         this.toolbarContainer = toolbarContainer;
         this.pageToolbarContainer = pageToolbarContainer;
@@ -139,8 +143,50 @@ export class BaseViewer {
         this.loadImage(this.navigationToolbar.currentPage);
     }
 
-    //taken from UTIF library and modified to select the page
+    exportToPDF() {
+        if (!this.#internalSource) {
+            alert('Please load the image first');
+            return;
+        }
+
+        // https://stackoverflow.com/questions/37677750/pdf-file-size-too-big-created-using-jspdf
+        // Default export is a4 paper, portrait, using millimeters for units
+        const doc = new jsPDF({
+            orientation: 'portrait',       // "portrait" or "landscape" shortcuts "p" or "l"
+            unit: 'in',     //Possible values are "pt" (points), "mm", "cm", "in", "px", "pc", "em" or "ex".
+            format: [this.page.widthInch, this.page.heightInch],
+            putOnlyUsedFonts: true,
+            compress: true
+        });
+        for (let pageIndex = 1; pageIndex <= this.pageCount; pageIndex++) {
+            const uint8Array = this.#getPageImage(this.#buffer, pageIndex);
+            // Creates an ImageData object from a given Uint8ClampedArray and the size of the image it contains.
+            // https://developer.mozilla.org/en-US/docs/Web/API/ImageData
+            // A Uint8ClampedArray representing a one-dimensional array containing the data in the RGBA order, with integer values between 0 and 255 (inclusive). The order goes by rows from the top-left pixel to the bottom-right.
+            const imgd = new ImageData(new Uint8ClampedArray(uint8Array.buffer), this.page.width, this.page.height);
+            doc.addImage(imgd, 'JPEG', 0, 0, this.page.widthInch, this.page.heightInch, undefined, 'MEDIUM');
+            if (pageIndex < this.pageCount)
+                doc.addPage();
+        }
+        //doc.save('exported image.pdf');
+        doc.output('save', 'exported image.pdf');
+    }
+
     #bufferToURI(buff, pageNumber) {
+        const uint8Array = this.#getPageImage(buff, pageNumber);
+
+        //returns Uint8Array of the image in RGBA format, 8 bits per channel 
+        //(ready to use in context2d.putImageData() etc.)
+        var cnv = document.createElement('canvas'); cnv.width = this.page.width; cnv.height = this.page.height;
+        var ctx = cnv.getContext('2d');
+        var imgd = new ImageData(new Uint8ClampedArray(uint8Array.buffer), this.page.width, this.page.height);
+        ctx.putImageData(imgd, 0, 0);
+        return cnv.toDataURL();
+    }
+
+    //taken from UTIF library and modified to select the page
+    // returns Uint8Array of the image in RGBA format, 8 bits per channel 
+    #getPageImage(buff, pageNumber) {
         const pageIndex = pageNumber-1;
         if (!(this.#ifds)) {
             this.#ifds = UTIF.decode(buff);  //this operation is required only once per document. not for each page.
@@ -159,20 +205,25 @@ export class BaseViewer {
         //     var ar = img['t256'] * img['t257'];
         //     if (ar > ma) { ma = ar; page = img; }
         // }
-        const page = this.#ifds[pageIndex];
-        UTIF.decodeImage(buff, page, this.#ifds);
+        this.page = this.#ifds[pageIndex];
+        UTIF.decodeImage(buff, this.page, this.#ifds);
         //If there is an image inside the IFD, it is decoded and three new properties are added to the IFD:
         //width: the width of the image
         //height: the height of the image
         //data: decompressed pixel data of the image
-        var w = page.width, h = page.height;
-        const rgba = UTIF.toRGBA8(page);  // Uint8Array with RGBA pixels
-        //returns Uint8Array of the image in RGBA format, 8 bits per channel 
-        //(ready to use in context2d.putImageData() etc.)
-        var cnv = document.createElement('canvas'); cnv.width = w; cnv.height = h;
-        var ctx = cnv.getContext('2d');
-        var imgd = new ImageData(new Uint8ClampedArray(rgba.buffer), w, h);
-        ctx.putImageData(imgd, 0, 0);
-        return cnv.toDataURL();
+        // https://www.loc.gov/preservation/digital/formats/content/tiff_tags.shtml
+        // 296	0128	ResolutionUnit	The unit of measurement for XResolution and YResolution.
+        //      RESUNIT_NONE = 1; RESUNIT_INCH = 2; RESUNIT_CENTIMETER = 3;
+        // 282	011A	XResolution	The number of pixels per ResolutionUnit in the ImageWidth direction.
+        // 283	011B	YResolution	The number of pixels per ResolutionUnit in the ImageLength direction.
+        // 274	0112	Orientation	The orientation of the image with respect to the rows and columns.
+        this.page.ResolutionUnit = this.page.t296[0];
+        this.page.XResolution = this.page.t282[0][0];
+        this.page.YResolution = this.page.t283[0][0];
+        //this.page.Orientation = this.page.t274[0];
+        this.page.widthInch = this.page.width / this.page.XResolution;
+        this.page.heightInch = this.page.height / this.page.YResolution;
+        const uint8Array = UTIF.toRGBA8(this.page);  // Uint8Array with RGBA pixels
+        return uint8Array;
     }
 }

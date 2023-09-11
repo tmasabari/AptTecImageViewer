@@ -64,8 +64,11 @@
             <!-- https://stackoverflow.com/questions/4328947/limit-file-format-when-using-input-type-file -->
             <input type="file" id="fileInput"  accept="image/*" title="Image file selector" />
         </div>
-        <div> <input type="button" id="loadTiff" onclick="LoadTiffSample(); return false;" value="TiffSample"/> 
-            <input type="button" id="loadJpeg" onclick="LoadJpegSample(); return false;" value="JpegSample" /></div>
+        <div> 
+            <input type="button" id="loadTiff" onclick="LoadTiffSample(); return false;" value="TiffSample"/> 
+            <input type="button" id="loadJpeg" onclick="LoadJpegSample(); return false;" value="JpegSample" />
+            <input type="button" id="exportToPDF" onclick="exportToPDF(); return false;" value="Export To PDF" />
+        </div>
         <div class="imageToolbar"></div>
         <div class="navigationToolbar"></div>
         <div class="infoToolbar"></div>
@@ -103,16 +106,20 @@
 
         });
         function LoadTiffSample() {
-            const tiffViewer = new AptTec.Viewer(AptTec.ViewerSources.Url,
+            window.tiffViewer = new AptTec.Viewer(AptTec.ViewerSources.Url,
                 '../Data/Multi_page24bpp.tiff', 
                 'image/tiff', 'viewerZoom', '.imageToolbar', '.navigationToolbar', '.viewerProgress');
             (async function () { await tiffViewer.show(); })();
         }
         function LoadJpegSample() {
-            const tiffViewer = new AptTec.Viewer(AptTec.ViewerSources.Url,
+            window.tiffViewer = new AptTec.Viewer(AptTec.ViewerSources.Url,
                 '../Data/Large-Sample-Image-download-for-Testing.jpg', 
                 'image/jpeg', 'viewerZoom', '.imageToolbar', '.navigationToolbar', '.viewerProgress');
             (async function () { await tiffViewer.show(); })();
+        }
+        function exportToPDF() {
+            if(window.tiffViewer)
+                window.tiffViewer.exportToPDF();
         }
     </script>
 </body>
